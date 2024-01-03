@@ -46,7 +46,7 @@ class Server:
     def federate(self, clients):
         updates = []
         for c in clients:
-            print("Training client {}".format(clients.index(c)))
+            print("\n -----> Training client {}".format(clients.index(c)))
             c_model = ServerNet()
             c_model.load_state_dict(self.model.state_dict())
             c.train(5, c_model)
@@ -64,6 +64,6 @@ class Server:
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
         print(
-            "Accuracy of the server model on test images: %d %%"
+            "========== !!!!! Accuracy of the server model on test images: %d %% !!!!! =========="
             % (100 * correct / total)
         )

@@ -36,7 +36,7 @@ class FLClient:
         self.server_model_copy = copy.deepcopy(server_model)
 
         # Distill local model knowledge to server model.
-        print("Distilling local model knowledge to server model.")
+        print("\tDistilling local model knowledge to server model.")
         kld_loss = nn.KLDivLoss(reduction="batchmean")
         ce_loss = nn.CrossEntropyLoss()
         optimizer = optim.Adam(self.server_model_copy.parameters(), lr=0.001)
@@ -59,12 +59,12 @@ class FLClient:
                 optimizer.step()
                 running_loss += loss.item()
             print(
-                "Epoch %d loss: %.3f"
+                "\t\tEpoch %d loss: %.3f"
                 % (epoch + 1, running_loss / len(self.train_loader))
             )
 
         # Distill server model knowledge to local model.
-        print("Distilling server model knowledge to local model.")
+        print("\tDistilling server model knowledge to local model.")
         kld_loss = nn.KLDivLoss(reduction="batchmean")
         ce_loss = nn.CrossEntropyLoss()
         optimizer = optim.Adam(self.model.parameters(), lr=0.001)
@@ -87,12 +87,12 @@ class FLClient:
                 optimizer.step()
                 running_loss += loss.item()
             print(
-                "Epoch %d loss: %.3f"
+                "\t\tEpoch %d loss: %.3f"
                 % (epoch + 1, running_loss / len(self.train_loader))
             )
 
         # Finetune distilled local model on local data.
-        print("Finetuning distilled local model on local data.")
+        print("\tFinetuning distilled local model on local data.")
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(self.model.parameters(), lr=0.001)
         self.model.train()
@@ -106,7 +106,7 @@ class FLClient:
                 optimizer.step()
                 running_loss += loss.item()
             print(
-                "Epoch %d loss: %.3f"
+                "\t\tEpoch %d loss: %.3f"
                 % (epoch + 1, running_loss / len(self.train_loader))
             )
 

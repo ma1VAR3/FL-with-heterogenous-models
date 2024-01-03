@@ -41,7 +41,8 @@ if __name__ == "__main__":
     for i in range(NUM_CLIENTS):
         for j in range(NUM_CLASSES_PER_CLIENT):
             num_clients_per_class[client_classes[i][j]] += 1
-    print(num_clients_per_class)
+    # print(num_clients_per_class)
+
     divided_indices_per_class = []
     for i in range(10):
         splits = np.array_split(
@@ -71,7 +72,7 @@ if __name__ == "__main__":
 
     server = Server(testset)
     for i in range(NUM_ROUNDS):
-        print("Round {}".format(i))
+        print("\n\n ========== Round {} ==========".format(i))
         server.federate(clients)
         server.evaluate()
 
