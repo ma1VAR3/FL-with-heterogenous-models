@@ -33,6 +33,8 @@ class Server:
             self.test_data, batch_size=32, shuffle=True
         )
         self.model = ServerNet()
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model.to(self.device)
 
     def aggregate(self, client_updates):
         for cu in client_updates:
@@ -48,6 +50,7 @@ class Server:
         for c in clients:
             print("\n -----> Training client {}".format(clients.index(c)))
             c_model = ServerNet()
+            c_model.to(self.device)
             c_model.load_state_dict(self.model.state_dict())
             c.train(5, c_model)
             updates.append(c.get_weights())

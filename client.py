@@ -31,10 +31,12 @@ class FLClient:
             units //= 2
         fc_param_list.append([units, 10])
         self.model = Net(conv_param_list, fc_param_list)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model.to(self.device)
 
     def train(self, num_epochs, server_model):
         self.server_model_copy = copy.deepcopy(server_model)
-
+        self.server_model_copy.to(self.device)
         # Distill local model knowledge to server model.
         print("\tDistilling local model knowledge to server model.")
         kld_loss = nn.KLDivLoss(reduction="batchmean")
@@ -45,6 +47,7 @@ class FLClient:
         for epoch in range(num_epochs):
             running_loss = 0.0
             for inputs, labels in self.train_loader:
+                inputs, labels = inputs.to(self.device), labels.to(self.device)
                 optimizer.zero_grad()
                 with torch.no_grad():
                     local_model_logits = self.model(inputs)
@@ -64,6 +67,7 @@ class FLClient:
             )
 
         # Distill server model knowledge to local model.
+        server_model.to(self.device)
         print("\tDistilling server model knowledge to local model.")
         kld_loss = nn.KLDivLoss(reduction="batchmean")
         ce_loss = nn.CrossEntropyLoss()
@@ -73,6 +77,7 @@ class FLClient:
         for epoch in range(num_epochs):
             running_loss = 0.0
             for inputs, labels in self.train_loader:
+                inputs, labels = inputs.to(self.device), labels.to(self.device)
                 optimizer.zero_grad()
                 with torch.no_grad():
                     server_model_logits = server_model(inputs)
@@ -92,6 +97,7 @@ class FLClient:
             )
 
         # Finetune distilled local model on local data.
+        self.model.to(self.device)
         print("\tFinetuning distilled local model on local data.")
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(self.model.parameters(), lr=0.001)
@@ -99,6 +105,7 @@ class FLClient:
         for epoch in range(3):
             running_loss = 0.0
             for inputs, labels in self.train_loader:
+                inputs, labels = inputs.to(self.device), labels.to(self.device)
                 optimizer.zero_grad()
                 outputs = self.model(inputs)
                 loss = criterion(outputs, labels)
