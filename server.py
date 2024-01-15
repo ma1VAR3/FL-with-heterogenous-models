@@ -62,6 +62,7 @@ class Server:
         self.model.eval()
         with torch.no_grad():
             for images, labels in self.test_loader:
+                images, labels = images.to(self.device), labels.to(self.device)
                 outputs = self.model(images)
                 _, predicted = torch.max(outputs.data, 1)
                 total += labels.size(0)
