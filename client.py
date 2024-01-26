@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 from model import Net
+from server import ServerNet
 
 
 class FLClient:
@@ -119,3 +120,41 @@ class FLClient:
 
     def get_weights(self):
         return self.server_model_copy.state_dict()
+
+
+class FLClientFedAvg:
+    def __init__(self, train_data):
+        self.train_data = train_data
+        self.train_loader = torch.utils.data.DataLoader(
+            self.train_data, batch_size=32, shuffle=True
+        )
+
+        self.model = ServerNet()
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model.to(self.device)
+
+    def train(self, num_epochs, server_model):
+        # Finetune distilled local model on local data.
+        self.model.to(self.device)
+        self.model.load_state_dict(server_model.state_dict())
+        print("\tFinetuning distilled local model on local data.")
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.Adam(self.model.parameters(), lr=0.001)
+        self.model.train()
+        for epoch in range(3):
+            running_loss = 0.0
+            for inputs, labels in self.train_loader:
+                inputs, labels = inputs.to(self.device), labels.to(self.device)
+                optimizer.zero_grad()
+                outputs = self.model(inputs)
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
+                running_loss += loss.item()
+            print(
+                "\t\tEpoch %d loss: %.3f"
+                % (epoch + 1, running_loss / len(self.train_loader))
+            )
+
+    def get_weights(self):
+        return self.model.state_dict()
