@@ -9,10 +9,10 @@ import numpy as np
 from client import FLClient
 from server import Server
 
-NUM_CLIENTS = 3
+NUM_CLIENTS = 10
 K = 4
 NUM_ROUNDS = 100
-NUM_CLASSES_PER_CLIENT = 7
+NUM_CLASSES_PER_CLIENT = 10
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
